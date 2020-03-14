@@ -63,3 +63,26 @@ func TestCoinsFromBytes(t *testing.T) {
 		t.Error(cmp.Diff(want, got))
 	}
 }
+
+func TestHexagramNumByTrigrams(t *testing.T) {
+	t.Parallel()
+	tcs := []struct {
+		input y.TrigramPair
+		want  int
+	}{
+		{y.TrigramPair{y.Thunder, y.Water}, 3},
+		{y.TrigramPair{y.Mountain, y.Wind}, 53},
+		{y.TrigramPair{y.Flame, y.Thunder}, 55},
+		{y.TrigramPair{y.Water, y.Earth}, 7},
+		{y.TrigramPair{y.Heaven, y.Lake}, 43},
+		{y.TrigramPair{y.Earth, y.Heaven}, 12},
+		{y.TrigramPair{y.Wind, y.Wind}, 57},
+		{y.TrigramPair{y.Water, y.Flame}, 64},
+	}
+	for _, tc := range tcs {
+		got := y.HexagramNumByTrigrams[tc.input.Lower][tc.input.Upper]
+		if !cmp.Equal(tc.want, got) {
+			t.Error(cmp.Diff(tc.want, got))
+		}
+	}
+}

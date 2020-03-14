@@ -64,6 +64,23 @@ func LinesFromBytes(bs ByteSet) LineSet {
 	return ls
 }
 
+type Trigram int
+
+const (
+	Heaven Trigram = iota
+	Earth
+	Thunder
+	Water
+	Mountain
+	Wind
+	Flame
+	Lake
+)
+
+type TrigramPair struct {
+	Lower, Upper Trigram
+}
+
 // Hexagram represents an individual hexagram. The Symbol shows the component
 // lines, as a Unicode rune. The name of the hexagram is given in Chinese
 // characters, Romanised Chinese and English.
@@ -77,4 +94,37 @@ type Hexagram struct {
 var Hexagrams = []Hexagram{
 	{},
 	{'䷀', "乾", "qián", "The Creative"},
+	{'䷁', "坤", "kūn", "The Receptive"},
+	{'䷂', "屯", "zhūn", "Difficulty at the Beginning"},
+}
+
+var HexagramNumByTrigrams = map[Trigram]map[Trigram]int{
+	Heaven: map[Trigram]int{
+		Heaven: 1, Earth: 11, Thunder: 34, Water: 5, Mountain: 26, Wind: 9, Flame: 14, Lake: 43,
+	},
+	Earth: map[Trigram]int{
+		Heaven: 12, Earth: 2, Thunder: 16, Water: 8, Mountain: 23, Wind: 20, Flame: 35, Lake: 45,
+	},
+	Thunder: map[Trigram]int{
+		Heaven: 25, Earth: 24, Thunder: 51, Water: 3, Mountain: 27, Wind: 42, Flame: 21, Lake: 17,
+	},
+	Water: map[Trigram]int{
+		Heaven: 6, Earth: 7, Thunder: 40, Water: 29, Mountain: 4, Wind: 59, Flame: 64, Lake: 47,
+	},
+	Mountain: map[Trigram]int{
+		Heaven: 33, Earth: 15, Thunder: 62, Water: 39, Mountain: 52, Wind: 53, Flame: 56, Lake: 31,
+	},
+	Wind: map[Trigram]int{
+		Heaven: 44, Earth: 46, Thunder: 32, Water: 48, Mountain: 18, Wind: 57, Flame: 50, Lake: 28,
+	},
+	Flame: map[Trigram]int{
+		Heaven: 13, Earth: 36, Thunder: 55, Water: 63, Mountain: 22, Wind: 37, Flame: 30, Lake: 49,
+	},
+	Lake: map[Trigram]int{
+		Heaven: 10, Earth: 19, Thunder: 54, Water: 60, Mountain: 41, Wind: 61, Flame: 38, Lake: 58,
+	},
+}
+
+func HexagramFromTrigramPair(tp TrigramPair) Hexagram {
+	return Hexagrams[HexagramNumByTrigrams[tp.Lower][tp.Upper]]
 }
