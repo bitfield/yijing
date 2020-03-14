@@ -31,15 +31,32 @@ func TestLinesFromBytes(t *testing.T) {
 	// These bytes represent the following bit sequence:
 	// 000 100 001 011 100 101 (plus trailing waste bits)
 	input := y.ByteSet{0b00010000, 0b10111001, 0b01000000}
-	want := y.LineSet{
+	wantLower := y.LineTriple{
 		y.OldYin,
 		y.YoungYang,
 		y.YoungYang,
+	}
+	wantUpper := y.LineTriple{
 		y.YoungYin,
 		y.YoungYang,
 		y.YoungYin,
 	}
-	got := y.LinesFromBytes(input)
+	gotLower, gotUpper := y.LinesFromBytes(input)
+	if !cmp.Equal(wantLower, gotLower) {
+		t.Error(cmp.Diff(wantLower, gotLower))
+	}
+	if !cmp.Equal(wantUpper, gotUpper) {
+		t.Error(cmp.Diff(wantUpper, gotUpper))
+	}
+}
+
+func TestHexagramFromBytes(t *testing.T) {
+	t.Parallel()
+	// These bytes represent the following bit sequence:
+	// 000 100 001 011 100 101 (plus trailing waste bits)
+	input := y.ByteSet{0b00010000, 0b10111001, 0b01000000}
+	want := y.Hexagram(60)
+	got := y.HexagramFromBytes(input)
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}
@@ -64,11 +81,11 @@ func TestCoinsFromBytes(t *testing.T) {
 	}
 }
 
-func TestHexagramNumByTrigrams(t *testing.T) {
+func TestHexagramByTrigrams(t *testing.T) {
 	t.Parallel()
 	tcs := []struct {
 		input y.TrigramPair
-		want  int
+		want  y.Hexagram
 	}{
 		{y.TrigramPair{y.Thunder, y.Water}, 3},
 		{y.TrigramPair{y.Mountain, y.Wind}, 53},
@@ -80,7 +97,31 @@ func TestHexagramNumByTrigrams(t *testing.T) {
 		{y.TrigramPair{y.Water, y.Flame}, 64},
 	}
 	for _, tc := range tcs {
-		got := y.HexagramNumByTrigrams[tc.input.Lower][tc.input.Upper]
+		got := y.HexagramByTrigrams[tc.input.Lower][tc.input.Upper]
+		if !cmp.Equal(tc.want, got) {
+			t.Error(cmp.Diff(tc.want, got))
+		}
+	}
+}
+
+func TestTrigramFromLineTriple(t *testing.T) {
+	t.Parallel()
+	tcs := []struct {
+		input y.LineTriple
+		want  y.Trigram
+	}{
+		{y.LineTriple{y.OldYin, y.YoungYang, y.YoungYang}, y.Lake},
+		{y.LineTriple{y.OldYang, y.OldYang, y.YoungYin}, y.Wind},
+		{y.LineTriple{y.YoungYin, y.YoungYang, y.YoungYin}, y.Water},
+		{y.LineTriple{y.OldYin, y.OldYang, y.YoungYang}, y.Lake},
+		{y.LineTriple{y.YoungYang, y.OldYin, y.OldYin}, y.Mountain},
+		{y.LineTriple{y.OldYin, y.OldYin, y.OldYang}, y.Thunder},
+		{y.LineTriple{y.YoungYin, y.YoungYin, y.YoungYin}, y.Earth},
+		{y.LineTriple{y.OldYang, y.OldYang, y.YoungYang}, y.Heaven},
+		{y.LineTriple{y.YoungYang, y.OldYin, y.OldYang}, y.Flame},
+	}
+	for _, tc := range tcs {
+		got := y.TrigramFromLineTriple(tc.input)
 		if !cmp.Equal(tc.want, got) {
 			t.Error(cmp.Diff(tc.want, got))
 		}
