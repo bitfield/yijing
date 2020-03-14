@@ -12,8 +12,14 @@ type Coin int
 // CoinSet represents the three Coins required to produce a Line.
 type CoinSet [3]Coin
 
+type CoinSet6 [6]CoinSet
+
+type ByteSet [3]byte
+
 // Line represents a hexagram line.
 type Line int
+
+type LineSet [6]Line
 
 // These constants represent the various kinds of Line.
 const (
@@ -26,6 +32,36 @@ const (
 // LineFromCoins takes a CoinSet and returns the equivalent Line.
 func LineFromCoins(cs CoinSet) Line {
 	return Line(cs[0] + cs[1] + cs[2])
+}
+
+func CoinsFromBytes(bs ByteSet) CoinSet6 {
+	var coins []Coin
+	for _, b := range bs {
+		for i := 7; i >= 0; i-- {
+			if b>>i&1 == 1 {
+				coins = append(coins, Heads)
+			} else {
+				coins = append(coins, Tails)
+			}
+		}
+	}
+	return CoinSet6{
+		CoinSet{coins[0], coins[1], coins[2]},
+		CoinSet{coins[3], coins[4], coins[5]},
+		CoinSet{coins[6], coins[7], coins[8]},
+		CoinSet{coins[9], coins[10], coins[11]},
+		CoinSet{coins[12], coins[13], coins[14]},
+		CoinSet{coins[15], coins[16], coins[17]},
+	}
+}
+
+func LinesFromBytes(bs ByteSet) LineSet {
+	var ls LineSet
+	coinsets := CoinsFromBytes(bs)
+	for i, cs := range coinsets {
+		ls[i] = LineFromCoins(cs)
+	}
+	return ls
 }
 
 // Hexagram represents an individual hexagram. The Symbol shows the component
