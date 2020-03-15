@@ -1,5 +1,9 @@
 package yijing
 
+import (
+	"io"
+)
+
 // Tails represents a coin toss resulting in tails.
 const Tails = 2
 
@@ -13,8 +17,6 @@ type Coin int
 type CoinSet [3]Coin
 
 type CoinSet6 [6]CoinSet
-
-type ByteSet [3]byte
 
 // Line represents a hexagram line.
 type Line int
@@ -34,12 +36,14 @@ const (
 	Yang = true
 )
 
+var RandReader io.Reader
+
 // LineFromCoins takes a CoinSet and returns the equivalent Line.
 func LineFromCoins(cs CoinSet) Line {
 	return Line(cs[0] + cs[1] + cs[2])
 }
 
-func CoinsFromBytes(bs ByteSet) CoinSet6 {
+func CoinsFromBytes(bs []byte) CoinSet6 {
 	var coins []Coin
 	for _, b := range bs {
 		for i := 7; i >= 0; i-- {
@@ -60,7 +64,7 @@ func CoinsFromBytes(bs ByteSet) CoinSet6 {
 	}
 }
 
-func LinesFromBytes(bs ByteSet) (lower, upper LineTriple) {
+func LinesFromBytes(bs []byte) (lower, upper LineTriple) {
 	coinsets := CoinsFromBytes(bs)
 	for i, cs := range coinsets[0:3] {
 		lower[i] = LineFromCoins(cs)
@@ -176,11 +180,20 @@ func TrigramFromLineTriple(input LineTriple) Trigram {
 	return Heaven // can't happen
 }
 
-func HexagramFromBytes(bs ByteSet) Hexagram {
+func HexagramFromBytes(bs []byte) Hexagram {
 	lower, upper := LinesFromBytes(bs)
 	tp := TrigramPair{
 		Lower: TrigramFromLineTriple(lower),
 		Upper: TrigramFromLineTriple(upper),
 	}
 	return HexagramFromTrigramPair(tp)
+}
+
+func RandomHexagram() (Hexagram, error) {
+	b := make([]byte, 3)
+	_, err := RandReader.Read(b)
+	if err != nil {
+		return Hexagram(0), err
+	}
+	return HexagramFromBytes(b), nil
 }

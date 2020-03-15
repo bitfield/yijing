@@ -30,7 +30,7 @@ func TestLinesFromBytes(t *testing.T) {
 	t.Parallel()
 	// These bytes represent the following bit sequence:
 	// 000 100 001 011 100 101 (plus trailing waste bits)
-	input := y.ByteSet{0b00010000, 0b10111001, 0b01000000}
+	input := []byte{0b00010000, 0b10111001, 0b01000000}
 	wantLower := y.LineTriple{
 		y.OldYin,
 		y.YoungYang,
@@ -54,7 +54,7 @@ func TestHexagramFromBytes(t *testing.T) {
 	t.Parallel()
 	// These bytes represent the following bit sequence:
 	// 000 100 001 011 100 101 (plus trailing waste bits)
-	input := y.ByteSet{0b00010000, 0b10111001, 0b01000000}
+	input := []byte{0b00010000, 0b10111001, 0b01000000}
 	want := y.Hexagram(60)
 	got := y.HexagramFromBytes(input)
 	if !cmp.Equal(want, got) {
@@ -66,7 +66,7 @@ func TestCoinsFromBytes(t *testing.T) {
 	t.Parallel()
 	// These bytes represent the following bit sequence:
 	// 000 100 001 011 100 101 (plus trailing waste bits)
-	input := y.ByteSet{0b00010000, 0b10111001, 0b01000000}
+	input := []byte{0b00010000, 0b10111001, 0b01000000}
 	want := y.CoinSet6{
 		y.CoinSet{y.Tails, y.Tails, y.Tails},
 		y.CoinSet{y.Heads, y.Tails, y.Tails},
@@ -125,5 +125,26 @@ func TestTrigramFromLineTriple(t *testing.T) {
 		if !cmp.Equal(tc.want, got) {
 			t.Error(cmp.Diff(tc.want, got))
 		}
+	}
+}
+
+type zeroReader struct{}
+
+func (z zeroReader) Read(b []byte) (int, error) {
+	copy(b, make([]byte, len(b)))
+
+	return len(b), nil
+}
+
+func TestRandomHexagram(t *testing.T) {
+	t.Parallel()
+	y.RandReader = zeroReader{}
+	want := y.Hexagram(2)
+	got, err := y.RandomHexagram()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
 	}
 }
