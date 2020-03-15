@@ -1,7 +1,10 @@
 package yijing
 
 import (
+	"fmt"
 	"io"
+
+	"github.com/bitfield/qrand"
 )
 
 // Tails represents a coin toss resulting in tails.
@@ -36,7 +39,7 @@ const (
 	Yang = true
 )
 
-var RandReader io.Reader
+var RandReader io.Reader = qrand.Reader
 
 // LineFromCoins takes a CoinSet and returns the equivalent Line.
 func LineFromCoins(cs CoinSet) Line {
@@ -93,6 +96,11 @@ type TrigramPair struct {
 }
 
 type Hexagram int
+
+func (n Hexagram) String() string {
+	h := Hexagrams[n]
+	return fmt.Sprintf("%d. %c - %s (%s) - %s", n, h.Symbol, h.Chinese, h.Roman, h.English)
+}
 
 // Hexagram represents an individual hexagram. The Symbol shows the component
 // lines, as a Unicode rune. The name of the hexagram is given in Chinese
